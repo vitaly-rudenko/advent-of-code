@@ -19,8 +19,8 @@ func main() {
 	defer file.Close()
 
 	dial := 50
-	zeroes_after_rotation := 0
-	zeroes_during_rotation := 0
+	zeroesAfterRotation := 0
+	zeroesDuringDuration := 0
 	turns := 0
 
 	scanner := bufio.NewScanner(file)
@@ -32,14 +32,14 @@ func main() {
 			log.Fatal(err)
 		}
 
-		_dial, zeroes := AddTicks(dial, ticks)
-		dial = _dial
+		updatedDial, zeroes := AddTicks(dial, ticks)
+		dial = updatedDial
 
 		turns++
-		zeroes_during_rotation += zeroes
+		zeroesDuringDuration += zeroes
 
 		if dial == 0 {
-			zeroes_after_rotation++
+			zeroesAfterRotation++
 		}
 	}
 
@@ -50,8 +50,8 @@ func main() {
 	fmt.Printf(
 		`Dial turned %v times, reaching zero %v times after the operation`+
 			`and %v times during the operation, final dial position: %v`,
-		turns, zeroes_after_rotation,
-		zeroes_during_rotation, dial,
+		turns, zeroesAfterRotation,
+		zeroesDuringDuration, dial,
 	)
 }
 
@@ -66,8 +66,8 @@ func RotationToTicks(rotation string) (int, error) {
 		return 0, errors.New("Invalid rotation prefix")
 	}
 
-	stringified_ticks := rotation[1:]
-	ticks, err := strconv.Atoi(stringified_ticks)
+	stringifiedTicks := rotation[1:]
+	ticks, err := strconv.Atoi(stringifiedTicks)
 	if err != nil {
 		return 0, err
 	}

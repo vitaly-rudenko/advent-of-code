@@ -73,66 +73,66 @@ func TestRotationToTicksInvalid(t *testing.T) {
 func TestAddTicksPositive(t *testing.T) {
 	dial := 53
 	ticks := 25
-	want_result := 78
-	want_zeroes := 0
+	wantResult := 78
+	wantZeroes := 0
 	result, zeroes := AddTicks(dial, ticks)
-	if result != want_result || zeroes != want_zeroes {
-		t.Errorf(`AddTicks(%v, %v) = %v, want for %v`, dial, ticks, result, want_result)
+	if result != wantResult || zeroes != wantZeroes {
+		t.Errorf(`AddTicks(%v, %v) = %v, want for %v`, dial, ticks, result, wantResult)
 	}
 }
 
 func TestAddTicksPositiveOverflow(t *testing.T) {
 	dial := 52
 	ticks := 48
-	want_result := 0
-	want_zeroes := 1
+	wantResult := 0
+	wantZeroes := 1
 	result, zeroes := AddTicks(dial, ticks)
-	if result != want_result || zeroes != want_zeroes {
-		t.Errorf(`AddTicks(%v, %v) = %v, %v, want for %v, %v`, dial, ticks, result, zeroes, want_result, want_zeroes)
+	if result != wantResult || zeroes != wantZeroes {
+		t.Errorf(`AddTicks(%v, %v) = %v, %v, want for %v, %v`, dial, ticks, result, zeroes, wantResult, wantZeroes)
 	}
 }
 
 func TestAddTicksPositiveCircle(t *testing.T) {
 	dial := 43
 	ticks := 100
-	want_result := dial
-	want_zeroes := 1
+	wantResult := dial
+	wantZeroes := 1
 	result, zeroes := AddTicks(dial, ticks)
-	if result != want_result || zeroes != want_zeroes {
-		t.Errorf(`AddTicks(%v, %v) = %v, %v, want for %v, %v`, dial, ticks, result, zeroes, want_result, want_zeroes)
+	if result != wantResult || zeroes != wantZeroes {
+		t.Errorf(`AddTicks(%v, %v) = %v, %v, want for %v, %v`, dial, ticks, result, zeroes, wantResult, wantZeroes)
 	}
 }
 
 func TestAddTicksNegative(t *testing.T) {
 	dial := 53
 	ticks := -21
-	want_result := 32
-	want_zeroes := 0
+	wantResult := 32
+	wantZeroes := 0
 	result, zeroes := AddTicks(dial, ticks)
-	if result != want_result || zeroes != want_zeroes {
-		t.Errorf(`AddTicks(%v, %v) = %v, %v, want for %v, %v`, dial, ticks, result, zeroes, want_result, want_zeroes)
+	if result != wantResult || zeroes != wantZeroes {
+		t.Errorf(`AddTicks(%v, %v) = %v, %v, want for %v, %v`, dial, ticks, result, zeroes, wantResult, wantZeroes)
 	}
 }
 
 func TestAddTicksNegativeOverflow(t *testing.T) {
 	dial := 50
 	ticks := -68
-	want_result := 82
-	want_zeroes := 1
+	wantResult := 82
+	wantZeroes := 1
 	result, zeroes := AddTicks(dial, ticks)
-	if result != want_result || zeroes != want_zeroes {
-		t.Errorf(`AddTicks(%v, %v) = %v, %v, want for %v, %v`, dial, ticks, result, zeroes, want_result, want_zeroes)
+	if result != wantResult || zeroes != wantZeroes {
+		t.Errorf(`AddTicks(%v, %v) = %v, %v, want for %v, %v`, dial, ticks, result, zeroes, wantResult, wantZeroes)
 	}
 }
 
 func TestAddTicksNegativeCircle(t *testing.T) {
 	dial := 43
 	ticks := -1000
-	want_result := dial
-	want_zeroes := 10
+	wantResult := dial
+	wantZeroes := 10
 	result, zeroes := AddTicks(dial, ticks)
-	if result != want_result || zeroes != want_zeroes {
-		t.Errorf(`AddTicks(%v, %v) = %v, %v, want for %v, %v`, dial, ticks, result, zeroes, want_result, want_zeroes)
+	if result != wantResult || zeroes != wantZeroes {
+		t.Errorf(`AddTicks(%v, %v) = %v, %v, want for %v, %v`, dial, ticks, result, zeroes, wantResult, wantZeroes)
 	}
 }
 
