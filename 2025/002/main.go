@@ -133,6 +133,10 @@ func FindInvalidIdsInRangeV2(min int, max int) ([]int, error) {
 }
 
 func PartOfInteger(num int, length int) (int, error) {
+	if length <= 0 {
+		return 0, errors.New("Invalid length")
+	}
+
 	stringified := strconv.Itoa(num)
 	if len(stringified) <= 0 {
 		return 0, errors.New("Invalid input number")
