@@ -63,9 +63,9 @@ func FindInvalidIdsInRangeV2(min int, max int) (map[int]bool, error) {
 
 	invalidIdsInRange := map[int]bool{}
 
-	for pairLength := 1; pairLength <= maxLength/2; pairLength++ {
-		for part := int(math.Pow10(pairLength - 1)); part <= int(math.Pow10(pairLength))-1; part++ {
-			for repeat := 2; repeat <= maxLength/pairLength; repeat++ {
+	for partLength := 1; partLength <= maxLength/2; partLength++ {
+		for part := int(math.Pow10(partLength - 1)); part <= int(math.Pow10(partLength))-1; part++ {
+			for repeat := 2; repeat <= maxLength/partLength; repeat++ {
 				stringifiedPart := strconv.Itoa(part)
 
 				invalidId, err := strconv.Atoi(strings.Repeat(stringifiedPart, repeat))
