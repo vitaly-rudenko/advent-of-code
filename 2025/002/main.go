@@ -97,8 +97,6 @@ func FindInvalidIdsInRangeV2(min int, max int) ([]int, error) {
 
 	invalidIdsInRange := []int{}
 
-	iter := 0
-
 	for pairLength := 1; pairLength <= maxLength/2; pairLength++ {
 		halfMin, err := PartOfInteger(min, pairLength)
 		if err != nil {
@@ -118,8 +116,6 @@ func FindInvalidIdsInRangeV2(min int, max int) ([]int, error) {
 		for half := halfMin; half <= halfMax; half++ {
 			for repeat := minLength / pairLength; repeat <= maxLength/pairLength; repeat++ {
 				stringifiedHalf := strconv.Itoa(half)
-
-				iter++
 
 				invalidId, err := strconv.Atoi(strings.Repeat(stringifiedHalf, repeat))
 				if err != nil {
