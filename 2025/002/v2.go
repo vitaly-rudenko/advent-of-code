@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"io"
 	"log"
 	"math"
@@ -81,26 +80,4 @@ func FindInvalidIdsInRangeV2(min int, max int) (map[int]bool, error) {
 	}
 
 	return invalidIdsInRange, nil
-}
-
-func PartOfInteger(num int, length int) (int, error) {
-	if length <= 0 {
-		return 0, errors.New("Invalid length")
-	}
-
-	stringified := strconv.Itoa(num)
-	if len(stringified) <= 0 {
-		return 0, errors.New("Invalid input number")
-	}
-
-	if len(stringified) == 1 {
-		return num, nil
-	}
-
-	part, err := strconv.Atoi(stringified[:length])
-	if err != nil {
-		return 0, err
-	}
-
-	return part, nil
 }
