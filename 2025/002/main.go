@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -21,7 +22,8 @@ func main() {
 	}
 	defer file.Close()
 
-	allInvalidIds := []int{}
+	invalidIdsV1 := []int{}
+	invalidIdsV2 := []int{}
 	reader := bufio.NewReader(file)
 	for {
 		string, readerErr := reader.ReadString(',')
@@ -35,27 +37,37 @@ func main() {
 			log.Fatal(err)
 		}
 
-		log.Print("stringifiedRange ", stringifiedRange, " -> min ", min, " & max ", max)
-
-		invalidIds, err := ExtractInvalidIds(min, max)
+		invalidIdsInRangeV1, err := FindInvalidIdsInRangeV1(min, max)
+		invalidIdsInRangeV2, err := FindInvalidIdsInRangeV2(min, max)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		log.Print("invalidIds: ", invalidIds)
-		allInvalidIds = append(allInvalidIds, invalidIds...)
+		log.Print("Range: ", min, "-", max, " => ", invalidIdsInRangeV2)
+
+		invalidIdsV1 = append(invalidIdsV1, invalidIdsInRangeV1...)
+		invalidIdsV2 = append(invalidIdsV2, invalidIdsInRangeV2...)
 
 		if readerErr == io.EOF {
 			break
 		}
 	}
 
-	allInvalidIdsSum := 0
-	for i := range allInvalidIds {
-		allInvalidIdsSum += allInvalidIds[i]
+	sumOfInvalidIdsV1 := 0
+	for i := range invalidIdsV1 {
+		sumOfInvalidIdsV1 += invalidIdsV1[i]
 	}
 
-	log.Print("allInvalidIds: ", allInvalidIds, " -> allInvalidIdsSum: ", allInvalidIdsSum)
+	// TODO: Current V2 algorithm returns duplicates (e.g. 222220-222224)
+	invalidIdsV2 = slices.Compact(invalidIdsV2)
+
+	sumOfInvalidIdsV2 := 0
+	for i := range invalidIdsV2 {
+		sumOfInvalidIdsV2 += invalidIdsV2[i]
+	}
+
+	log.Printf("[V1] Found %v invalid IDs, sum: %v.", len(invalidIdsV1), sumOfInvalidIdsV1)
+	log.Printf("[V2] Found %v invalid IDs, sum: %v.", len(invalidIdsV2), sumOfInvalidIdsV2)
 }
 
 func ParseStringifiedRange(stringifiedRange string) (int, int, error) {
@@ -79,47 +91,118 @@ func ParseStringifiedRange(stringifiedRange string) (int, int, error) {
 	return min, max, nil
 }
 
-func ExtractInvalidIds(min int, max int) ([]int, error) {
-	stringifiedMin := strconv.Itoa(min)
-	stringifiedMax := strconv.Itoa(max)
+func FindInvalidIdsInRangeV2(min int, max int) ([]int, error) {
+	minLength := len(strconv.Itoa(min))
+	maxLength := len(strconv.Itoa(max))
 
-	minLength := len(stringifiedMin)
-	maxLength := len(stringifiedMax)
+	invalidIdsInRange := []int{}
 
-	for length := minLength; length <= maxLength; length++ {
-		if length%2 == 0 {
-			invalidIds := []int{}
+	iter := 0
 
-			firstPartMin, err := strconv.Atoi(stringifiedMin[:length/2])
-			if err != nil {
-				return nil, err
-			}
+	for pairLength := 1; pairLength <= maxLength/2; pairLength++ {
+		halfMin, err := PartOfInteger(min, pairLength)
+		if err != nil {
+			return []int{}, err
+		}
 
-			firstPartMax, err := strconv.Atoi(stringifiedMax[:length/2])
-			if err != nil {
-				return nil, err
-			}
+		halfMax, err := PartOfInteger(max, pairLength)
+		if err != nil {
+			return []int{}, err
+		}
 
-			if firstPartMax < firstPartMin {
-				temp := firstPartMin
-				firstPartMin = firstPartMax
-				firstPartMax = temp
-			}
+		if halfMax < halfMin {
+			halfMin = halfMax
+			halfMax = halfMax*10 - 1
+		}
 
-			for firstPart := firstPartMin; firstPart <= firstPartMax; firstPart++ {
-				generatedNumber, err := strconv.Atoi(strings.Repeat(strconv.Itoa(firstPart), 2))
+		for half := halfMin; half <= halfMax; half++ {
+			for repeat := minLength / pairLength; repeat <= maxLength/pairLength; repeat++ {
+				stringifiedHalf := strconv.Itoa(half)
+
+				iter++
+
+				invalidId, err := strconv.Atoi(strings.Repeat(stringifiedHalf, repeat))
 				if err != nil {
-					return nil, err
+					return []int{}, err
 				}
 
-				if generatedNumber >= min && generatedNumber <= max {
-					invalidIds = append(invalidIds, generatedNumber)
+				if invalidId >= min && invalidId <= max {
+					invalidIdsInRange = append(invalidIdsInRange, invalidId)
 				}
 			}
-
-			return invalidIds, nil
 		}
 	}
 
-	return []int{}, nil
+	return invalidIdsInRange, nil
+}
+
+func PartOfInteger(num int, length int) (int, error) {
+	stringified := strconv.Itoa(num)
+	if len(stringified) <= 0 {
+		return 0, errors.New("Invalid input number")
+	}
+
+	if len(stringified) == 1 {
+		return num, nil
+	}
+
+	part, err := strconv.Atoi(stringified[:length])
+	if err != nil {
+		return 0, err
+	}
+
+	return part, nil
+}
+
+func FindInvalidIdsInRangeV1(min int, max int) ([]int, error) {
+	halfMin, err := HalfOfInteger(min)
+	if err != nil {
+		return []int{}, err
+	}
+
+	halfMax, err := HalfOfInteger(max)
+	if err != nil {
+		return []int{}, err
+	}
+
+	if halfMax < halfMin {
+		halfMin = halfMax
+		halfMax = halfMax*10 - 1
+	}
+
+	invalidIdsInRange := []int{}
+
+	for half := halfMin; half <= halfMax; half++ {
+		stringifiedHalf := strconv.Itoa(half)
+
+		invalidId, err := strconv.Atoi(stringifiedHalf + stringifiedHalf)
+		if err != nil {
+			return []int{}, err
+		}
+
+		if invalidId >= min && invalidId <= max {
+			invalidIdsInRange = append(invalidIdsInRange, invalidId)
+		}
+	}
+
+	return invalidIdsInRange, nil
+}
+
+// 1 => 1, 23 => 2, 460 => 4, 1234 => 12
+func HalfOfInteger(num int) (int, error) {
+	stringified := strconv.Itoa(num)
+	if len(stringified) <= 0 {
+		return 0, errors.New("Invalid input number")
+	}
+
+	if len(stringified) == 1 {
+		return num, nil
+	}
+
+	half, err := strconv.Atoi(stringified[:len(stringified)/2])
+	if err != nil {
+		return 0, err
+	}
+
+	return half, nil
 }
