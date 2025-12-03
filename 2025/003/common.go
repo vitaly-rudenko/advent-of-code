@@ -57,7 +57,7 @@ func FindMaxJoltage(joltageRatings string, batteries int) (string, error) {
 		seenMap[maxPos] = true
 	}
 
-	// Extract digits as seen positions
+	// Extract digits at seen positions
 	maxJoltage := ""
 
 	for pos, char := range joltageRatings {
