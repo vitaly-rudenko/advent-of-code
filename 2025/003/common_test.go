@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFindMaxJoltage_12batteries(t *testing.T) {
+func TestFindMaxJoltage(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
