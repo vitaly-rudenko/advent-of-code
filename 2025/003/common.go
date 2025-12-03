@@ -6,71 +6,66 @@ import (
 )
 
 func FindMaxJoltage(joltageRatings string, batteries int) (string, error) {
-	marked := map[int]bool{}
-
-	leftmostVal := -1
-	leftmostPos := -1
+	seenMap := map[int]bool{}
 
 	for range batteries {
-		realMaxVal := -1
-		realMaxPos := -1
+		// Find rightmost gap
+		gapPos := -1
 
-		maxVal := -1
+		for pos := len(joltageRatings) - 1; pos >= 0; pos-- {
+			_, seen := seenMap[pos]
+
+			if seen {
+				if gapPos != -1 {
+					break
+				}
+			} else {
+				gapPos = pos
+			}
+		}
+
+		if gapPos == -1 {
+			return "", errors.New("Could not find gap")
+		}
+
+		// Find leftmost max value in that gap
 		maxPos := -1
+		maxVal := -1
 
-		for currPos := 0; currPos < len(joltageRatings); currPos++ {
-			_, seen := marked[currPos]
+		for pos := gapPos; pos < len(joltageRatings); pos++ {
+			_, seen := seenMap[pos]
 			if seen {
 				continue
 			}
 
-			currVal, err := strconv.Atoi(string(joltageRatings[currPos]))
+			val, err := strconv.Atoi(string(joltageRatings[pos]))
 			if err != nil {
 				return "", err
 			}
 
-			if currVal >= realMaxVal {
-				realMaxVal = currVal
-				realMaxPos = currPos
+			if val > maxVal {
+				maxPos = pos
+				maxVal = val
 			}
-
-			// skip if before leftmost, unless it's a larger rating
-			if currPos <= leftmostPos && currVal < leftmostVal {
-				continue
-			}
-
-			// ">=" to find rightmost, even if identical
-			if currVal >= maxVal {
-				maxVal = currVal
-				maxPos = currPos
-			}
-		}
-
-		if maxPos == -1 && realMaxPos != -1 {
-			maxPos = realMaxPos
-			maxVal = realMaxVal
 		}
 
 		if maxPos == -1 {
-			return "", errors.New("Could not find max")
+			return "", errors.New("Could not find max in gap")
 		}
 
-		marked[maxPos] = true
-
-		if leftmostPos == -1 || maxPos < leftmostPos {
-			leftmostVal = maxVal
-			leftmostPos = maxPos
-		}
+		// Mark is as seen
+		seenMap[maxPos] = true
 	}
 
-	result := ""
+	// Extract digits as seen positions
+	maxJoltage := ""
 
 	for pos, char := range joltageRatings {
-		_, seen := marked[pos]
+		_, seen := seenMap[pos]
 		if seen {
-			result += string(char)
+			maxJoltage += string(char)
 		}
 	}
 
-	return result, nil
+	return maxJoltage, nil
 }
