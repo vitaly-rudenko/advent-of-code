@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+type IngredientRange struct {
+	min int
+	max int
+}
+
 func main() {
 	file, err := os.Open("./input.txt")
 	if err != nil {
@@ -18,7 +23,7 @@ func main() {
 
 	mode := "fresh"
 
-	freshIngredientRanges := [][]int{}
+	freshIngredientRanges := []IngredientRange{}
 	availableIngredients := []int{}
 
 	scanner := bufio.NewScanner(file)
@@ -62,15 +67,12 @@ func main() {
 
 	for _, availableIngredient := range availableIngredients {
 		for _, freshIngredientRange := range freshIngredientRanges {
-			if availableIngredient >= freshIngredientRange[0] && availableIngredient <= freshIngredientRange[1] {
+			if availableIngredient >= freshIngredientRange.min && availableIngredient <= freshIngredientRange.max {
 				freshAndAvailableIngredients = append(freshAndAvailableIngredients, availableIngredient)
 				break
 			}
 		}
 	}
-
-	log.Print(freshIngredientRanges)
-	log.Print(availableIngredients)
 
 	log.Printf("Found %v fresh ingredient ranges and %v available ingredients: "+
 		"out of them %v are both fresh and available",
@@ -78,21 +80,21 @@ func main() {
 		len(freshAndAvailableIngredients))
 }
 
-func ParseIngredientRange(line string) ([]int, error) {
+func ParseIngredientRange(line string) (IngredientRange, error) {
 	items := strings.Split(line, "-")
 	if len(items) != 2 {
-		return []int{}, errors.New("Invalid range format")
+		return IngredientRange{}, errors.New("Invalid range format")
 	}
 
-	from, err := strconv.Atoi(items[0])
+	min, err := strconv.Atoi(items[0])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	to, err := strconv.Atoi(items[1])
+	max, err := strconv.Atoi(items[1])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return []int{from, to}, nil
+	return IngredientRange{min, max}, nil
 }
