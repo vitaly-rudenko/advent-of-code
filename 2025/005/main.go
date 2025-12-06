@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -63,6 +64,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// V1
 	freshAndAvailable := []int{}
 	for _, ingredient := range available {
 		for _, ingredientRange := range freshRanges {
@@ -73,55 +75,25 @@ func main() {
 		}
 	}
 
-	removed := map[int]bool{}
-	for {
-		// TODO: Looks like a dirty trick to make flawed algorithm below work.
-		//       For the given input, it retries once.
-		changed := false
-
-		for i := range freshRanges {
-			if _, ok := removed[i]; ok {
-				continue
-			}
-
-			for j := range i {
-				if _, ok := removed[j]; ok {
-					continue
-				}
-
-				if (freshRanges[j].min >= freshRanges[i].min &&
-					freshRanges[j].max <= freshRanges[i].max) ||
-					(freshRanges[i].min >= freshRanges[j].min &&
-						freshRanges[i].max <= freshRanges[j].max) {
-					// One includes another (absorb)
-
-					freshRanges[i].min = min(freshRanges[i].min, freshRanges[j].min)
-					freshRanges[i].max = max(freshRanges[i].max, freshRanges[j].max)
-					removed[j] = true
-					changed = true
-				} else if (freshRanges[i].min <= freshRanges[j].min &&
-					freshRanges[i].max >= freshRanges[j].min) ||
-					(freshRanges[j].min <= freshRanges[i].min &&
-						freshRanges[j].max >= freshRanges[i].min) {
-					// One overlaps another (merge)
-
-					freshRanges[i].min = min(freshRanges[i].min, freshRanges[j].min)
-					freshRanges[i].max = max(freshRanges[i].max, freshRanges[j].max)
-					removed[j] = true
-					changed = true
-				}
-			}
-		}
-
-		if !changed {
-			break
-		}
-	}
+	// V2
+	sort.Slice(freshRanges, func(i, j int) bool {
+		return freshRanges[i].min < freshRanges[j].min
+	})
 
 	freshTotal := 0
-	for i := range freshRanges {
-		if _, ok := removed[i]; !ok {
-			freshTotal += freshRanges[i].max - freshRanges[i].min + 1
+	start := 0
+	maxMax := freshRanges[0].max
+	for i := 1; i <= len(freshRanges); i++ {
+		if i < len(freshRanges) && freshRanges[i].min <= maxMax {
+			maxMax = max(freshRanges[i].max, maxMax)
+			continue
+		}
+
+		freshTotal += maxMax - freshRanges[start].min + 1
+
+		if i < len(freshRanges) {
+			start = i
+			maxMax = freshRanges[i].max
 		}
 	}
 
